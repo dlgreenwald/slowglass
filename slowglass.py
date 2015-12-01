@@ -1,24 +1,35 @@
-from wand.image import Image
+#from wand.image import Image
+from SimpleCV import Image
+from SimpleCV import Display
+from glob import glob
 import os
-import tempfile
-from subprocess import Popen, PIPE
+import time
+
+steadyStateFPS = 10
+desiredBuffer = 1*60 #1 minute * 60 seconds
+numberOfFrames = steadyStateFPS*desiredBuffer;
+
+disp = Display()
+
+filelist = []
+frameCounter = 101
+sleepTime = .1
+
+while disp.isNotDone():
+    if frameCounter > 100:
+        frameCounter = 0
+        filelist = glob("images/*.jpg")
+        if len(filelist)<numberOfFrames:
+            sleepTime = .1
+            print "number of frames in buffer="+str(len(filelist))+" desired="+str(numberOfFrames)+" setting sleeptime to .1"
+        else:
+            sleepTime = .09
+            print "number of frames in buffer="+str(len(filelist))+" desired="+str(numberOfFrames)+" setting sleeptime to .09"
 
 
-filelist = ['new.jpg']
-
-fps, duration = 24, 100
-p = Popen(['ffmpeg', '-y', '-f', 'image2pipe', '-s', '300x300', '-vcodec', 'mjpeg', '-i', '-', '-vcodec', 'libx264', '-pix_fmt',  'yuv444p', 'video.mp4'], stdin=PIPE, bufsize=0)
-for f in filelist:
-    bg = Image(width=300, height=300)
-    bg.depth = 8
-
-    i = open(f, "r").read()
-    img = Image(blob=i)
-    bg.composite(img, left=0, top=0)
-
-    blob = bg.make_blob("jpeg")
-    out = open('new.jpg', "w")
-    p.stdin.write(blob)
-    bg.close()
-p.stdin.close()
-p.wait()
+    filename = filelist.pop(0)
+    img = Image(filename)
+    img.save(disp)
+    os.remove(filename)
+    frameCounter = frameCounter+1
+    time.sleep(sleepTime)
