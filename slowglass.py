@@ -8,7 +8,7 @@ import signal, errno
 import shutil
 import os
 
-import capture, slowglass
+import capture, player
 
 procs = {}
 pipes = {}
