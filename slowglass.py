@@ -12,6 +12,7 @@ import capture, player
 
 procs = {}
 pipes = {}
+global running
 running = False
 
 def startup():
@@ -56,7 +57,6 @@ def startup():
     # not started successful - clean up
     if not running:
         cmdShutdown()
-        shutdown
 
 def shutdown():
     for slave in procs:
@@ -72,9 +72,31 @@ def cmdShutdown():
         pipes[slave].send('shutdown')
     print('Slowglass', 0, "Shutting down.")
 
+def run(timeout=5):
+    global procs
+    # do something important
+    try:
+        time.sleep(timeout)
+        for slave in procs:
+            if procs[slave].is_alive() is not True:
+                print('Slowglass', 0, "One of the slaves has died...shuting down")
+                cmdShutdown()
+                break;
+    except IOError as e:
+        if e.errno == errno.EINTR and not running:
+            pass  # mask "IOError: [Errno 4] Interrupted function call"
+        else:
+            raise
+
+    return running
+
 def sighandler_shutdown(signum, frame):
     signal.signal(signal.SIGINT, signal.SIG_IGN)  # we heard you!
     cmdShutdown()
+
+def getRunning():
+    global running
+    return running
 
 if __name__=="__main__":
     signal.signal(signal.SIGINT, sighandler_shutdown)
@@ -85,9 +107,10 @@ if __name__=="__main__":
     print('Slowglass', 0, "Press CTRL-C to shut down.")
     print('Slowglass', 0, "***")
 
-    running = startup()
+    startup()
+    print('Slowglass', 0, "Slowglass started")
 
-    while running:
-        running = run()
+    while getRunning():
+        run()
 
     shutdown()
