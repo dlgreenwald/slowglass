@@ -20,6 +20,7 @@ def Run(cmdPipe):
         if cmdPipe.poll():
             cmd = cmdPipe.recv()
             if cmd=='shutdown':
+                print('capture', 0, "Shutting down.")
                 break
 
         filelist = glob("images/*.jpg")

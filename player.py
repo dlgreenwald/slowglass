@@ -24,6 +24,7 @@ def Run(cmdPipe):
         if cmdPipe.poll():
             cmd = cmdPipe.recv()
             if cmd=='shutdown':
+                print('player', 0, "Shutting down.")
                 break
 
         if frameCounter > 100 or len(filelist) == 0:
