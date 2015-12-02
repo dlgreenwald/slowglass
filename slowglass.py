@@ -12,7 +12,6 @@ import capture, player
 
 procs = {}
 pipes = {}
-global running
 running = False
 
 def startup():
@@ -57,6 +56,8 @@ def startup():
     # not started successful - clean up
     if not running:
         cmdShutdown()
+
+    return running
 
 def shutdown():
     for slave in procs:
@@ -107,10 +108,10 @@ if __name__=="__main__":
     print('Slowglass', 0, "Press CTRL-C to shut down.")
     print('Slowglass', 0, "***")
 
-    startup()
+    running = startup()
     print('Slowglass', 0, "Slowglass started")
 
-    while getRunning():
-        run()
+    while running:
+        running = run()
 
     shutdown()
